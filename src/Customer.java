@@ -4,7 +4,7 @@ public class Customer extends User{
     }
 
     public void placeOrder(Order order) {
-        System.out.println(getName() + " placed an order.");
+        System.out.println(getName() + " placed an order, with ID " + order.getOrderId());
     }
 
     @Override
