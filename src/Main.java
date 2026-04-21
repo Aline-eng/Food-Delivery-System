@@ -1,11 +1,16 @@
 import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
     private static Scanner scanner = new Scanner(System.in);
     private static boolean exitSystem = false;
+    
+    // Static agents that maintain state throughout the program execution
+    private static DeliveryAgent[] agents = {
+            new DeliveryAgent(1, "Eric", "0789876543"),
+            new DeliveryAgent(2, "Jean", "0787654321"),
+            new DeliveryAgent(3, "Marie", "0785678901")
+    };
 
     public static void main(String[] args) {
         System.out.println("╔════════════════════════════════════════╗");
@@ -13,43 +18,16 @@ public class Main {
         System.out.println("╚════════════════════════════════════════╝\n");
 
         try {
-            // Step 1: Customer Identification
-            Customer customer = customerIdentificationMenu();
-            if (customer == null) {
-                System.out.println("\nThank you for using Food Delivery System. Goodbye!");
-                return;
+            while (!exitSystem) {
+                boolean continueRunning = processOrderSession();
+                if (!continueRunning) {
+                    break;
+                }
+
+                if (!continueMenu("Place another order")) {
+                    break;
+                }
             }
-
-            // Step 2: Restaurant & Food Ordering
-            Restaurant restaurant = selectRestaurant();
-            if (restaurant == null) {
-                System.out.println("\nThank you for using Food Delivery System. Goodbye!");
-                return;
-            }
-
-            Order order = new Order(generateOrderId(), customer);
-            placeOrder(order, restaurant);
-
-            if (order.getItems().isEmpty()) {
-                System.out.println("\nNo items ordered. Exiting...");
-                return;
-            }
-
-            // Step 3: Validate Order
-            try {
-                order.validateOrder();
-            } catch (EmptyOrderException e) {
-                System.out.println("\n[Order Error] " + e.getMessage());
-                return;
-            }
-
-            customer.placeOrder(order);
-            restaurant.prepareOrder(customer.getName());
-
-            // Step 4: Delivery Agent Selection with Error Handling
-            selectDeliveryAgent(order, restaurant);
-
-            order.displayOrder();
 
         } catch (IllegalArgumentException e) {
             System.out.println("\n[Validation Error] " + e.getMessage());
@@ -60,6 +38,48 @@ public class Main {
         }
 
         System.out.println("\nThank you for using Food Delivery System. Goodbye!");
+    }
+
+    private static boolean processOrderSession() {
+        // Step 1: Customer Identification
+        Customer customer = customerIdentificationMenu();
+        if (customer == null) {
+            return false;
+        }
+
+        // Step 2: Restaurant & Food Ordering
+        Restaurant restaurant = selectRestaurant();
+        if (restaurant == null) {
+            return false;
+        }
+
+        Order order = new Order(generateOrderId(), customer);
+        placeOrder(order, restaurant);
+
+        if (order.getItems().isEmpty()) {
+            System.out.println("\nNo items ordered.");
+            return !exitSystem;
+        }
+
+        // Step 3: Validate Order
+        try {
+            order.validateOrder();
+        } catch (EmptyOrderException e) {
+            System.out.println("\n[Order Error] " + e.getMessage());
+            return !exitSystem;
+        }
+
+        customer.placeOrder(order);
+        restaurant.prepareOrder(customer.getName());
+
+        // Step 4: Delivery Agent Selection with Error Handling
+        boolean deliveryAssigned = selectDeliveryAgent(order);
+
+        if (deliveryAssigned && !exitSystem) {
+            order.displayOrder();
+        }
+
+        return !exitSystem;
     }
 
     /**
@@ -175,12 +195,10 @@ public class Main {
     /**
      * Delivery Agent Selection Menu - Handles agent selection and unavailability
      */
-    private static void selectDeliveryAgent(Order order, Restaurant restaurant) {
-        DeliveryAgent[] availableAgents = initializeDeliveryAgents();
-
+    private static boolean selectDeliveryAgent(Order order) {
         while (true) {
             System.out.println("\n═══ Select Delivery Agent ═══\n");
-            displayAvailableAgents(availableAgents);
+            displayAvailableAgents(agents);
 
             System.out.print("\nEnter agent number to deliver your order (0 to cancel): ");
 
@@ -189,21 +207,21 @@ public class Main {
 
                 if (choice == 0) {
                     System.out.println("\nOrder delivery cancelled.");
-                    return;
+                    return false;
                 }
 
-                if (choice < 1 || choice > availableAgents.length) {
+                if (choice < 1 || choice > agents.length) {
                     System.out.println("[Input Error] Invalid choice. Please select a valid agent number.\n");
                     continue;
                 }
 
-                DeliveryAgent selectedAgent = availableAgents[choice - 1];
+                DeliveryAgent selectedAgent = agents[choice - 1];
 
                 try {
                     // Attempt to deliver order
                     selectedAgent.deliverOrder(order);
-                    System.out.println("\nOrder #" + order.getOrderId() + " assigned to " + selectedAgent.getName());
-                    break; // Success - exit loop
+                    System.out.println("\n[SUCCESS] Order #" + order.getOrderId() + " assigned to " + selectedAgent.getName());
+                    return true;
 
                 } catch (AgentUnavailableException e) {
                     System.out.println("\n[Delivery Error] " + e.getMessage());
@@ -222,11 +240,11 @@ public class Main {
                             continue; // Try selecting another agent
                         case 2:
                             System.out.println("\nReturning to main menu...");
-                            return;
+                            return false;
                         case 3:
                             System.out.println("\nExiting system...");
                             exitSystem = true;
-                            return;
+                            return false;
                         default:
                             System.out.println("[Input Error] Invalid choice. Returning to agent selection.\n");
                     }
@@ -240,24 +258,13 @@ public class Main {
     }
 
     /**
-     * Initialize available delivery agents
-     */
-    private static DeliveryAgent[] initializeDeliveryAgents() {
-        return new DeliveryAgent[]{
-                new DeliveryAgent(1, "Eric", "0789876543"),
-                new DeliveryAgent(2, "Jean", "0787654321"),
-                new DeliveryAgent(3, "Marie", "0785678901")
-        };
-    }
-
-    /**
      * Display available and unavailable agents
      */
-    private static void displayAvailableAgents(DeliveryAgent[] agents) {
+    private static void displayAvailableAgents(DeliveryAgent[] agentList) {
         System.out.println("Available Delivery Agents:");
-        for (int i = 0; i < agents.length; i++) {
-            DeliveryAgent agent = agents[i];
-            String status = agent.isAvailable() ? "Available" : "Unavailable";
+        for (int i = 0; i < agentList.length; i++) {
+            DeliveryAgent agent = agentList[i];
+            String status = agent.isAvailable() ? "[AVAILABLE]" : "[UNAVAILABLE]";
             System.out.println((i + 1) + ". " + agent.getName() + " - " + status);
         }
     }
@@ -266,18 +273,27 @@ public class Main {
      * Menu to continue or exit
      */
     private static boolean continueMenu(String context) {
-        System.out.println("\nWhat would you like to do?");
-        System.out.println("1. " + context);
-        System.out.println("2. Exit system");
-        System.out.print("\nEnter your choice (1 or 2): ");
+        while (true) {
+            System.out.println("\nWhat would you like to do?");
+            System.out.println("1. " + context);
+            System.out.println("2. Exit system");
+            System.out.print("\nEnter your choice (1 or 2): ");
 
-        try {
-            int choice = getIntInput();
-            return choice == 1;
-        } catch (InputMismatchException e) {
-            System.out.println("[Input Error] Please enter 1 or 2.");
-            scanner.nextLine();
-            return continueMenu(context);
+            try {
+                int choice = getIntInput();
+
+                if (choice == 1) {
+                    return true;
+                }
+
+                if (choice == 2) {
+                    return false;
+                }
+
+                System.out.println("[Input Error] Please enter 1 or 2.");
+            } catch (InputMismatchException e) {
+                System.out.println("[Input Error] Please enter 1 or 2.");
+            }
         }
     }
 
