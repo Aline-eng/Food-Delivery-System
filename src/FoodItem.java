@@ -7,13 +7,8 @@ public class FoodItem {
         this.price = price;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public double getPrice() {
-        return price;
-    }
+    public String getName()  { return name; }
+    public double getPrice() { return price; }
 
     @Override
     public String toString() {

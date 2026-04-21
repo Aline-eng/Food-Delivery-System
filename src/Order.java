@@ -13,7 +13,6 @@ public class Order {
         this.totalPrice = 0;
     }
 
-    // Compile-time polymorphism: method overloading
     public void addItem(FoodItem item) {
         items.add(item);
         totalPrice += item.getPrice();
@@ -26,26 +25,25 @@ public class Order {
         totalPrice += item.getPrice() * quantity;
     }
 
-    public int getOrderId() {
-        return orderId;
+    public void validateOrder() {
+        if (items.isEmpty()) {
+            throw new EmptyOrderException();
+        }
     }
 
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public double getTotalPrice() {
-        return totalPrice;
-    }
+    public int getOrderId()       { return orderId; }
+    public Customer getCustomer() { return customer; }
+    public double getTotalPrice() { return totalPrice; }
 
     public void displayOrder() {
-        System.out.println("\n--- Order Summary ---");
-        System.out.println("Order ID: " + orderId);
-        System.out.println("Customer: " + customer.getName());
+        System.out.println("\n========== Order Summary ==========");
+        System.out.println("Order ID  : " + orderId);
+        System.out.println("Customer  : " + customer.getName());
         System.out.println("Items ordered:");
         for (FoodItem item : items) {
-            System.out.println("  - " + item);
+            System.out.println("   - " + item);
         }
         System.out.println("Total Price: " + totalPrice + " RWF");
+        System.out.println("===================================");
     }
 }
