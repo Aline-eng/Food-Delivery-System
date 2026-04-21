@@ -31,9 +31,10 @@ public class Order {
         }
     }
 
-    public int getOrderId()       { return orderId; }
-    public Customer getCustomer() { return customer; }
-    public double getTotalPrice() { return totalPrice; }
+    public int getOrderId()           { return orderId; }
+    public Customer getCustomer()     { return customer; }
+    public double getTotalPrice()     { return totalPrice; }
+    public ArrayList<FoodItem> getItems() { return items; }
 
     public void displayOrder() {
         System.out.println("\n========== Order Summary ==========");
