@@ -1,42 +1,35 @@
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Restaurant {
     private String name;
-    private HashMap<Integer, String> menuItems;
-    private HashMap<String, Double> prices;
+    private LinkedHashMap<Integer, FoodItem> menu;
 
     public Restaurant(String name) {
         this.name = name;
-        menuItems = new HashMap<>();
-        prices = new HashMap<>();
-
-        // Menu setup
-        menuItems.put(1, "Burger");
-        menuItems.put(2, "Pizza");
-        menuItems.put(3, "Rolex");
-
-        prices.put("Burger", 5000.0);
-        prices.put("Pizza", 8000.0);
-        prices.put("Rolex", 2000.0);
+        menu = new LinkedHashMap<>();
+        menu.put(1, new FoodItem("Burger", 5000.0));
+        menu.put(2, new FoodItem("Pizza", 8000.0));
+        menu.put(3, new FoodItem("Rolex", 2000.0));
     }
 
     public void displayMenu() {
         System.out.println("\n--- " + name + " Menu ---");
-        for (int key : menuItems.keySet()) {
-            String item = menuItems.get(key);
-            System.out.println(key + ". " + item + " - " + prices.get(item) + " RWF");
+        for (Map.Entry<Integer, FoodItem> entry : menu.entrySet()) {
+            System.out.println(entry.getKey() + ". " + entry.getValue());
         }
     }
 
-    public String getItemByChoice(int choice) {
-        return menuItems.get(choice);
+    public FoodItem getItemByChoice(int choice) {
+        return menu.get(choice);
     }
 
-    public double getPrice(String item) {
-        return prices.get(item);
-    }
-
+    // Compile-time polymorphism: method overloading
     public void prepareOrder() {
-        System.out.println("\nRestaurant is preparing your order...");
+        System.out.println("\n" + name + " is preparing your order...");
+    }
+
+    public void prepareOrder(String customerName) {
+        System.out.println("\n" + name + " is preparing the order for " + customerName + "...");
     }
 }

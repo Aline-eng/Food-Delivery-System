@@ -2,28 +2,50 @@ import java.util.ArrayList;
 
 public class Order {
     private int orderId;
-    private ArrayList<String> items;
+    private Customer customer;
+    private ArrayList<FoodItem> items;
     private double totalPrice;
 
-    public Order(int orderId) {
+    public Order(int orderId, Customer customer) {
         this.orderId = orderId;
-        items = new ArrayList<>();
-        totalPrice = 0;
+        this.customer = customer;
+        this.items = new ArrayList<>();
+        this.totalPrice = 0;
     }
 
-    public void addItem(String item, double price) {
+    // Compile-time polymorphism: method overloading
+    public void addItem(FoodItem item) {
         items.add(item);
-        totalPrice += price;
+        totalPrice += item.getPrice();
+    }
+
+    public void addItem(FoodItem item, int quantity) {
+        for (int i = 0; i < quantity; i++) {
+            items.add(item);
+        }
+        totalPrice += item.getPrice() * quantity;
     }
 
     public int getOrderId() {
         return orderId;
     }
 
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public double getTotalPrice() {
+        return totalPrice;
+    }
+
     public void displayOrder() {
         System.out.println("\n--- Order Summary ---");
         System.out.println("Order ID: " + orderId);
-        System.out.println("Items: " + items);
+        System.out.println("Customer: " + customer.getName());
+        System.out.println("Items ordered:");
+        for (FoodItem item : items) {
+            System.out.println("  - " + item);
+        }
         System.out.println("Total Price: " + totalPrice + " RWF");
     }
 }

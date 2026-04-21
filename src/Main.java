@@ -1,5 +1,3 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 import java.util.Scanner;
 
 public class Main {
@@ -7,31 +5,32 @@ public class Main {
 
         Scanner scanner = new Scanner(System.in);
 
-        // Create objects
         Customer customer = new Customer(1, "Aline", "0781234567");
         DeliveryAgent agent = new DeliveryAgent(2, "Eric", "0789876543");
         Restaurant restaurant = new Restaurant("Kigali Bites");
 
-        Order order = new Order(101);
+        // Runtime polymorphism: calling displayDetails() through parent User reference
+        System.out.println("=== System Users ===");
+        User[] users = {customer, agent};
+        for (User user : users) {
+            user.displayDetails(); // calls overridden method based on actual object type
+        }
 
-        System.out.println("Welcome to Food Delivery System!");
+        Order order = new Order(101, customer);
 
+        System.out.println("\nWelcome to Food Delivery System!");
         restaurant.displayMenu();
 
         while (true) {
             System.out.print("\nEnter item number to order (0 to finish): ");
             int choice = scanner.nextInt();
 
-            if (choice == 0) {
-                break;
-            }
+            if (choice == 0) break;
 
-            String item = restaurant.getItemByChoice(choice);
-
+            FoodItem item = restaurant.getItemByChoice(choice);
             if (item != null) {
-                double price = restaurant.getPrice(item);
-                order.addItem(item, price);
-                System.out.println(item + " added to order.");
+                order.addItem(item); // compile-time polymorphism: single item
+                System.out.println(item.getName() + " added to order.");
             } else {
                 System.out.println("Invalid choice, try again.");
             }
@@ -39,7 +38,7 @@ public class Main {
 
         // Process order
         customer.placeOrder(order);
-        restaurant.prepareOrder();
+        restaurant.prepareOrder(customer.getName()); // compile-time polymorphism: overloaded with name
         agent.deliverOrder(order);
 
         // Show summary
