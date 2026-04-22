@@ -21,6 +21,7 @@ The system allows a customer to select food items from a restaurant menu, place 
 - Automatic order total calculation
 - Simulated order preparation and delivery
 - Interactive user input using Scanner
+- Collections-based relationships between customers, orders, restaurants, and delivery agents
 
 ---
 
@@ -44,6 +45,15 @@ The system allows a customer to select food items from a restaurant menu, place 
 
 5. **Order**
     - Stores ordered items and total price
+
+---
+
+## 📚 Collections Framework Applied
+
+- `List<Order>` in `Customer` models one customer having many orders.
+- `List<FoodItem>` in `Order` models one order containing many items in the sequence they were chosen.
+- `Set<Integer>` in `DeliveryAgent` stores unique delivered order IDs without duplicates.
+- `Map<Integer, FoodItem>` in `Restaurant` supports fast menu lookup by choice number.
 
 ---
 
