@@ -1,16 +1,34 @@
 import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.Map;
 
 public class Restaurant {
-    private String name;
-    private LinkedHashMap<Integer, FoodItem> menu;
+    private final String name;
+    // Menu choices are lookup-based, so Map connects a menu number to a FoodItem.
+    private final Map<Integer, FoodItem> menu;
 
     public Restaurant(String name) {
         this.name = name;
         menu = new LinkedHashMap<>();
-        menu.put(1, new FoodItem("Burger", 5000.0));
-        menu.put(2, new FoodItem("Pizza",  8000.0));
-        menu.put(3, new FoodItem("Rolex",  2000.0));
+        addMenuItem(1, new FoodItem("Burger", 5000.0));
+        addMenuItem(2, new FoodItem("Pizza",  8000.0));
+        addMenuItem(3, new FoodItem("Rolex",  2000.0));
+    }
+
+    public void addMenuItem(int choice, FoodItem item) {
+        menu.put(choice, item);
+    }
+
+    public FoodItem removeMenuItem(int choice) {
+        return menu.remove(choice);
+    }
+
+    public Map<Integer, FoodItem> getMenu() {
+        return Collections.unmodifiableMap(menu);
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void displayMenu() {
