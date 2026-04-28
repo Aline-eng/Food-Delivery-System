@@ -13,6 +13,7 @@ public class Order {
         this.totalPrice = 0;
     }
 
+    // Compile-time polymorphism: method overloading
     public void addItem(FoodItem item) {
         items.add(item);
         totalPrice += item.getPrice();
@@ -31,10 +32,20 @@ public class Order {
         }
     }
 
-    public int getOrderId()           { return orderId; }
-    public Customer getCustomer()     { return customer; }
-    public double getTotalPrice()     { return totalPrice; }
-    public ArrayList<FoodItem> getItems() { return items; }
+    // Returns all item names as a single comma-separated string.
+    // Used by DataManager when writing the order to the text file.
+    public String getItemsSummary() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            sb.append(items.get(i).getName());
+            if (i < items.size() - 1) sb.append(", ");
+        }
+        return sb.toString();
+    }
+
+    public int getOrderId()       { return orderId; }
+    public Customer getCustomer() { return customer; }
+    public double getTotalPrice() { return totalPrice; }
 
     public void displayOrder() {
         System.out.println("\n========== Order Summary ==========");

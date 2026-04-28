@@ -15,6 +15,9 @@ public class DeliveryAgent extends User {
         isAvailable = false;
         System.out.println(getName() + " is delivering order #" + order.getOrderId()
                 + " to " + order.getCustomer().getName());
+        // After delivery is done, agent becomes available again
+        isAvailable = true;
+        System.out.println(getName() + " has completed the delivery and is now available.");
     }
 
     @Override
