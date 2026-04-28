@@ -1,12 +1,9 @@
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class Order {
-    private final int orderId;
-    private final Customer customer;
-    // One order can contain many food items, so List preserves insertion order and duplicates.
-    private final List<FoodItem> items;
+    private int orderId;
+    private Customer customer;
+    private ArrayList<FoodItem> items;
     private double totalPrice;
 
     public Order(int orderId, Customer customer) {
@@ -16,6 +13,7 @@ public class Order {
         this.totalPrice = 0;
     }
 
+    // Compile-time polymorphism: method overloading
     public void addItem(FoodItem item) {
         items.add(item);
         totalPrice += item.getPrice();
@@ -28,34 +26,34 @@ public class Order {
         totalPrice += item.getPrice() * quantity;
     }
 
-    public FoodItem removeItem(int itemNumber) {
-        if (itemNumber < 1 || itemNumber > items.size()) {
-            throw new IllegalArgumentException("Invalid item number to remove.");
-        }
-
-        FoodItem removedItem = items.remove(itemNumber - 1);
-        totalPrice -= removedItem.getPrice();
-        return removedItem;
-    }
-
     public void validateOrder() {
         if (items.isEmpty()) {
             throw new EmptyOrderException();
         }
     }
 
-    public int getOrderId()           { return orderId; }
-    public Customer getCustomer()     { return customer; }
-    public double getTotalPrice()     { return totalPrice; }
-    public List<FoodItem> getItems() { return Collections.unmodifiableList(items); }
+    // Returns all item names as a single comma-separated string.
+    // Used by DataManager when writing the order to the text file.
+    public String getItemsSummary() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            sb.append(items.get(i).getName());
+            if (i < items.size() - 1) sb.append(", ");
+        }
+        return sb.toString();
+    }
+
+    public int getOrderId()       { return orderId; }
+    public Customer getCustomer() { return customer; }
+    public double getTotalPrice() { return totalPrice; }
 
     public void displayOrder() {
         System.out.println("\n========== Order Summary ==========");
         System.out.println("Order ID  : " + orderId);
         System.out.println("Customer  : " + customer.getName());
         System.out.println("Items ordered:");
-        for (int i = 0; i < items.size(); i++) {
-            System.out.println("   " + (i + 1) + ". " + items.get(i));
+        for (FoodItem item : items) {
+            System.out.println("   - " + item);
         }
         System.out.println("Total Price: " + totalPrice + " RWF");
         System.out.println("===================================");
