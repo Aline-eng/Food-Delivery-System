@@ -1,7 +1,9 @@
 public class Customer extends User {
 
-    public Customer(int id, String name, String phone) {
-        super(id, name, phone);
+    private static int nextId = 1;
+
+    public Customer(String name, String phone) {
+        super(nextId++, name, phone);
     }
 
     public void placeOrder(Order order) {
@@ -10,6 +12,6 @@ public class Customer extends User {
 
     @Override
     public void displayDetails() {
-        System.out.println("Customer       : " + getName() + " | Phone: " + getPhone());
+        System.out.println("Customer [ID: " + getId() + "] " + getName() + " | Phone: " + getPhone());
     }
 }

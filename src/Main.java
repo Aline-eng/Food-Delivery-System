@@ -1,80 +1,198 @@
+import java.util.ArrayList;
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+
+    static Scanner scanner = new Scanner(System.in);
+    static List<Customer> customers = new ArrayList<>();
+    static List<DeliveryAgent> agents = new ArrayList<>();
+    static Restaurant restaurant = new Restaurant("Kigali Bites");
+    static int orderCounter = 1;
+
     public static void main(String[] args) {
 
-        Scanner scanner = new Scanner(System.in);
-
-        // Initialize the data folder and show any previously saved orders from file
         DataManager.initializeDataDirectory();
-        System.out.println("========================================");
-        System.out.println("    Welcome to Food Delivery System");
-        System.out.println("========================================");
 
-        int savedCount = DataManager.countSavedOrders();
-        if (savedCount > 0) {
-            System.out.println("\n" + savedCount + " previous order(s) found on file.");
-            System.out.print("Would you like to view them? (yes/no): ");
-            String answer = scanner.nextLine().trim().toLowerCase();
-            if (answer.equals("yes")) {
-                DataManager.loadAndDisplayOrders();
+        // Load previously registered customers and agents from file on startup
+        customers = DataManager.loadCustomers();
+        agents = DataManager.loadAgents();
+
+        System.out.println("========================================");
+        System.out.println("     Welcome to Food Delivery System    ");
+        System.out.println("========================================");
+        System.out.println("Loaded " + customers.size() + " customer(s) and "
+                + agents.size() + " agent(s) from file.");
+
+        boolean running = true;
+        while (running) {
+            printMainMenu();
+            int choice = readInt();
+            switch (choice) {
+                case 1: registerCustomer();  break;
+                case 2: registerAgent();     break;
+                case 3: placeOrder();        break;
+                case 4: viewCustomers();     break;
+                case 5: viewAgents();        break;
+                case 6: DataManager.loadAndDisplayOrders(); break;
+                case 7:
+                    running = false;
+                    System.out.println("\nGoodbye!");
+                    break;
+                default:
+                    System.out.println("[Error] Please enter a number between 1 and 7.");
             }
-        } else {
-            System.out.println("\nNo previous orders on file. Starting fresh.");
         }
+        scanner.close();
+    }
 
-        // --- User validation demo (IllegalArgumentException) ---
-        System.out.println("\n=== Checking User Validation ===");
+    // ---------------------------------------------------------------
+    // MAIN MENU
+    // ---------------------------------------------------------------
+
+    static void printMainMenu() {
+        System.out.println("\n========== Main Menu ==========");
+        System.out.println("1. Register new customer");
+        System.out.println("2. Register new delivery agent");
+        System.out.println("3. Place an order");
+        System.out.println("4. View all customers");
+        System.out.println("5. View all delivery agents");
+        System.out.println("6. View all saved orders");
+        System.out.println("7. Exit");
+        System.out.print("Choose an option: ");
+    }
+
+    // ---------------------------------------------------------------
+    // 1. REGISTER CUSTOMER
+    // ---------------------------------------------------------------
+
+    static void registerCustomer() {
+        System.out.println("\n--- Register New Customer ---");
         try {
-            Customer invalid = new Customer(99, "", "123");
+            System.out.print("Enter customer name: ");
+            String name = scanner.nextLine().trim();
+
+            System.out.print("Enter phone number (10 digits): ");
+            String phone = scanner.nextLine().trim();
+
+            // Customer constructor calls User constructor which validates name and phone.
+            // If invalid, IllegalArgumentException is thrown and caught below.
+            Customer customer = new Customer(name, phone);
+            customers.add(customer);
+
+            // FILE I/O - WRITE: save the new customer to customers.txt
+            DataManager.saveCustomer(customer);
+
+            System.out.println("Customer registered successfully!");
+            customer.displayDetails();
+
         } catch (IllegalArgumentException e) {
             System.out.println("[Validation Error] " + e.getMessage());
         }
+    }
 
-        // Create the system objects
-        Customer customer = new Customer(1, "Aline", "0781234567");
-        DeliveryAgent agent = new DeliveryAgent(2, "Eric", "0789876543");
-        Restaurant restaurant = new Restaurant("Kigali Bites");
+    // ---------------------------------------------------------------
+    // 2. REGISTER DELIVERY AGENT
+    // ---------------------------------------------------------------
 
-        // Runtime polymorphism: both Customer and DeliveryAgent are treated as User
-        System.out.println("\n=== System Users ===");
-        User[] users = {customer, agent};
-        for (User user : users) {
-            user.displayDetails();
+    static void registerAgent() {
+        System.out.println("\n--- Register New Delivery Agent ---");
+        try {
+            System.out.print("Enter agent name: ");
+            String name = scanner.nextLine().trim();
+
+            System.out.print("Enter phone number (10 digits): ");
+            String phone = scanner.nextLine().trim();
+
+            DeliveryAgent agent = new DeliveryAgent(name, phone);
+            agents.add(agent);
+
+            // FILE I/O - WRITE: save the new agent to agents.txt
+            DataManager.saveAgent(agent);
+
+            System.out.println("Delivery agent registered successfully!");
+            agent.displayDetails();
+
+        } catch (IllegalArgumentException e) {
+            System.out.println("[Validation Error] " + e.getMessage());
         }
+    }
 
-        // Create the order linked to the customer
-        Order order = new Order(101, customer);
+    // ---------------------------------------------------------------
+    // 3. PLACE AN ORDER
+    // ---------------------------------------------------------------
 
-        System.out.println("\nWelcome, " + customer.getName() + "!");
+    static void placeOrder() {
+        System.out.println("\n--- Place an Order ---");
+
+        // Step 1: pick a customer
+        if (customers.isEmpty()) {
+            System.out.println("[Error] No customers registered yet. Please register a customer first.");
+            return;
+        }
+        System.out.println("\nSelect a customer:");
+        for (int i = 0; i < customers.size(); i++) {
+            System.out.print((i + 1) + ". ");
+            customers.get(i).displayDetails();
+        }
+        System.out.print("Enter customer number: ");
+        int customerChoice = readInt();
+        if (customerChoice < 1 || customerChoice > customers.size()) {
+            System.out.println("[Error] Invalid customer selection.");
+            return;
+        }
+        Customer customer = customers.get(customerChoice - 1);
+
+        // Step 2: pick a delivery agent
+        if (agents.isEmpty()) {
+            System.out.println("[Error] No delivery agents registered yet. Please register an agent first.");
+            return;
+        }
+        System.out.println("\nSelect a delivery agent:");
+        for (int i = 0; i < agents.size(); i++) {
+            System.out.print((i + 1) + ". ");
+            agents.get(i).displayDetails();
+        }
+        System.out.print("Enter agent number: ");
+        int agentChoice = readInt();
+        if (agentChoice < 1 || agentChoice > agents.size()) {
+            System.out.println("[Error] Invalid agent selection.");
+            return;
+        }
+        DeliveryAgent agent = agents.get(agentChoice - 1);
+
+        // Step 3: select items from the menu
+        Order order = new Order(orderCounter++, customer);
         restaurant.displayMenu();
 
-        // --- Ordering loop ---
         while (true) {
-            System.out.print("\nEnter item number to order (0 to finish): ");
+            System.out.print("\nEnter item number to add (0 to finish): ");
             try {
-                int choice = scanner.nextInt();
-                if (choice == 0) break;
+                int itemChoice = readInt();
+                if (itemChoice == 0) break;
 
-                FoodItem item = restaurant.getItemByChoice(choice);
+                // getItemByChoice throws IllegalArgumentException if item not on menu
+                FoodItem item = restaurant.getItemByChoice(itemChoice);
                 order.addItem(item);
-                System.out.println(item.getName() + " added to your order.");
+                System.out.println(item.getName() + " added. Running total: " + order.getTotalPrice() + " RWF");
 
             } catch (IllegalArgumentException e) {
                 System.out.println("[Menu Error] " + e.getMessage());
-            } catch (InputMismatchException e) {
-                System.out.println("[Input Error] Please enter a valid number.");
-                scanner.next();
             }
         }
 
-        // --- Process the order ---
+        // Step 4: process the order
         try {
+            // validateOrder throws EmptyOrderException if no items were added
             order.validateOrder();
+
             customer.placeOrder(order);
             restaurant.prepareOrder(customer.getName());
+
+            // deliverOrder throws AgentUnavailableException if agent is busy
             agent.deliverOrder(order);
+
             order.displayOrder();
 
             // FILE I/O - WRITE: save the completed order to orders.txt
@@ -85,21 +203,53 @@ public class Main {
         } catch (AgentUnavailableException e) {
             System.out.println("[Delivery Error] " + e.getMessage());
         }
+    }
 
-        // --- AgentUnavailableException demo ---
-        // Since agent becomes available after delivery, we force the scenario manually
-        System.out.println("\n=== Simulating Unavailable Agent ===");
-        DeliveryAgent busyAgent = new DeliveryAgent(3, "Jean", "0787654321");
-        Order demoOrder = new Order(102, customer);
-        demoOrder.addItem(new FoodItem("Pizza", 8000.0));
+    // ---------------------------------------------------------------
+    // 4. VIEW ALL CUSTOMERS
+    // ---------------------------------------------------------------
 
-        try {
-            busyAgent.deliverOrder(demoOrder); // first delivery — succeeds, agent goes unavailable mid-call
-        } catch (AgentUnavailableException e) {
-            System.out.println("[Delivery Error] " + e.getMessage());
+    static void viewCustomers() {
+        System.out.println("\n--- Registered Customers ---");
+        if (customers.isEmpty()) {
+            System.out.println("No customers registered yet.");
+            return;
         }
+        // Runtime polymorphism: each User reference calls the correct displayDetails()
+        for (User user : customers) {
+            user.displayDetails();
+        }
+    }
 
-        scanner.close();
-        System.out.println("\nThank you for using Food Delivery System. Goodbye!");
+    // ---------------------------------------------------------------
+    // 5. VIEW ALL AGENTS
+    // ---------------------------------------------------------------
+
+    static void viewAgents() {
+        System.out.println("\n--- Registered Delivery Agents ---");
+        if (agents.isEmpty()) {
+            System.out.println("No delivery agents registered yet.");
+            return;
+        }
+        for (User user : agents) {
+            user.displayDetails();
+        }
+    }
+
+    // ---------------------------------------------------------------
+    // HELPER: read an integer safely
+    // ---------------------------------------------------------------
+
+    static int readInt() {
+        while (true) {
+            try {
+                int value = scanner.nextInt();
+                scanner.nextLine();
+                return value;
+            } catch (InputMismatchException e) {
+                scanner.nextLine();
+                System.out.print("[Input Error] Please enter a valid number: ");
+            }
+        }
     }
 }

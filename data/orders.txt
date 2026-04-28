@@ -1,0 +1,5 @@
+Order ID  : 101
+Customer  : Aline | Phone: 0781234567
+Items     : Burger
+Total     : 5000.0 RWF
+------------------------------------

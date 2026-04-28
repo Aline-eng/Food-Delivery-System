@@ -1,8 +1,10 @@
 public class DeliveryAgent extends User {
+
+    private static int nextId = 1;
     private boolean isAvailable;
 
-    public DeliveryAgent(int id, String name, String phone) {
-        super(id, name, phone);
+    public DeliveryAgent(String name, String phone) {
+        super(nextId++, name, phone);
         this.isAvailable = true;
     }
 
@@ -14,15 +16,14 @@ public class DeliveryAgent extends User {
         }
         isAvailable = false;
         System.out.println(getName() + " is delivering order #" + order.getOrderId()
-                + " to " + order.getCustomer().getName());
-        // After delivery is done, agent becomes available again
+                + " to " + order.getCustomer().getName() + "...");
         isAvailable = true;
-        System.out.println(getName() + " has completed the delivery and is now available.");
+        System.out.println(getName() + " completed the delivery and is now available again.");
     }
 
     @Override
     public void displayDetails() {
-        System.out.println("Delivery Agent : " + getName()
+        System.out.println("Agent     [ID: " + getId() + "] " + getName()
                 + " | Phone: " + getPhone()
                 + " | Available: " + (isAvailable ? "Yes" : "No"));
     }
